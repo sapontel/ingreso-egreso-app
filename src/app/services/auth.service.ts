@@ -1,9 +1,14 @@
 import { Injectable } from '@angular/core';
+import firebase from 'firebase';
 import {AngularFireAuth} from '@angular/fire/auth';
 import {AngularFirestore} from '@angular/fire/firestore';
-import firebase from 'firebase';
 
-import {Observable} from 'rxjs';
+import {Observable, Subscription} from 'rxjs';
+
+import {Store} from '@ngrx/store';
+import {AppState} from '../app.reducer';
+import * as authAcions from '../auth/auth.actions';
+
 import {map} from 'rxjs/operators';
 import {Usuario} from '../models/usuario.models';
 
@@ -12,14 +17,23 @@ import {Usuario} from '../models/usuario.models';
 })
 export class AuthService {
 
+  userSubscription: Subscription;
   constructor(public auth: AngularFireAuth,
-              private firestore: AngularFirestore) { }
+              private firestore: AngularFirestore,
+              private store: Store<AppState>) { }
 
   initOutListener(): void {
     this.auth.authState.subscribe( fuser => {
-      console.log(fuser);
-      console.log(fuser?.uid);
-      console.log(fuser?.email);
+      if ( fuser ){
+        this.userSubscription = this.firestore.doc(`${fuser.uid}/usuario`).valueChanges()
+          .subscribe( (fireStoreUser: Usuario) => {
+            //const user = Usuario.fromFirebase(fireStoreUser);
+            this.store.dispatch( authAcions.setUser({user: fireStoreUser}));
+          });
+      } else {
+        this.userSubscription?.unsubscribe();
+        this.store.dispatch( authAcions.unSetUser());
+      }
     });
   }
 
@@ -36,7 +50,7 @@ export class AuthService {
     return this.auth.signInWithEmailAndPassword(email, password);
   }
 
-  logout(): ReturnType<firebase.auth.Auth['signOut']> {
+  logout(): Promise<void> {
     return this.auth.signOut();
   }
 
