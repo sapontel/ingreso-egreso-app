@@ -15,7 +15,7 @@ import {filter} from 'rxjs/operators';
 export class SidebarComponent implements OnInit, OnDestroy {
 
   nombre: string;
-  userSubs = Subscription;
+  userSubs: Subscription;
 
   constructor(private authService: AuthService,
               private store: Store<AppState>,
@@ -36,6 +36,6 @@ export class SidebarComponent implements OnInit, OnDestroy {
   }
 
   ngOnDestroy(): void {
-    this.userSubs.unsusbcribe();
+    this.userSubs.unsubscribe();
   }
 }

@@ -32,8 +32,8 @@ export class LoginComponent implements OnInit, OnDestroy {
 
   ngOnInit(): void {
     this.loginForm = this.fb.group({
-      email: ['', [Validators.required, Validators.email]],
-      password: ['', [Validators.required]],
+      email: ['sos1@gmail.com', [Validators.required, Validators.email]],
+      password: ['123456', [Validators.required]],
     });
     this.uiSubscription = this.store.select('ui')
       .subscribe( ui => this.cargando = ui.isLoading );
@@ -51,7 +51,6 @@ export class LoginComponent implements OnInit, OnDestroy {
 */
     const {email, password} = this.loginForm.value;
     this.authService.loginUsuario(email, password).then(credenciales => {
-      console.log(credenciales);
       // Swal.close();
       this.store.dispatch( ui.stopLoading() );
       this.router.navigate(['/']);
